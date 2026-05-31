@@ -92,62 +92,100 @@
                 <p class="text-yellow-400"># BookReturn()</p>
             </div>
         </div>
+        
         <div class="w-1 h-6 bg-stone-300"></div>
+        
         <div class="bg-stone-700 text-white rounded-xl shadow-lg w-96 z-10 border border-stone-600">
             <div class="bg-stone-800 p-3 border-b border-stone-600 text-center">
-                <h3 class="font-bold text-xl">Book (Base Class)</h3>
+                <h3 class="font-bold text-xl">Book</h3>
             </div>
-            <div class="p-4 text-sm uml-font text-stone-200 space-y-1">
-                <p>- __name, __ISBN, __genre</p>
+            <div class="p-4 text-sm uml-font text-stone-200 space-y-1 border-b border-stone-500">
+                <p>- __name: str</p>
+                <p>- __ISBN: str</p>
+                <p>- __genre: str</p>
                 <p>- _rent_num: int</p>
                 <p class="text-green-300 font-bold">- _realBookNum: int</p>
-                <p class="text-yellow-300 mt-2">+ rental(amount=1)</p>
+            </div>
+            <div class="p-4 text-sm uml-font text-stone-200 space-y-1">
+                <p>+ introduce()</p>
+                <p>+ rentaling()</p>
+                <p class="text-yellow-300">+ rental(amount=1)</p>
                 <p class="text-yellow-300">+ BookReturn()</p>
-                <p class="text-blue-300 mt-2"> > read() </p>
-                <p class="text-blue-300 mt-2"> > provide_preview(hero, heroine) </p>
+                <p class="text-blue-300">+ read()</p>
+                <p class="text-blue-300">+ provide_preview()</p>
             </div>
         </div>
+        
         <div class="w-1 h-6 bg-stone-300"></div>
         
         <div class="w-full relative pt-1">
             <div class="absolute top-0 left-[12.5%] w-[75%] h-1 bg-stone-300"></div>
             <div class="flex justify-between gap-4 w-full">
-                <div onclick="selectBook('shojo', this)" class="relative w-1/4 bg-white rounded-xl shadow border-2 border-pink-200 hover:border-pink-500 cursor-pointer overflow-hidden class-card">
+                
+                <div onclick="selectBook('shojo', this)" class="relative w-1/4 bg-white rounded-xl shadow border-2 border-pink-200 hover:border-pink-500 cursor-pointer overflow-hidden class-card group">
                     <div class="absolute -top-1 left-1/2 w-1 h-5 bg-stone-300 -translate-x-1/2"></div>
                     <div class="p-4 text-center mt-2 border-b border-stone-100">
-                        <h3 class="font-bold text-lg text-pink-600">Shojo</h3>
-                        <p class="text-blue-300 mt-2"> @Override read() </p>
-                        <p class="text-blue-300 mt-2"> @Override provide_preview(self, hero=None, heroin=None) </p>
+                        <h3 class="font-bold text-lg text-pink-600 group-hover:scale-110 transition-transform">Shojo</h3>
+                    </div>
+                    <div class="p-4 text-xs uml-font text-stone-600 space-y-1 border-b border-stone-100">
+                        <p>genre: "순정(소녀)"</p>
+                        <p>rent_num: 5</p>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <div class="bg-pink-500 text-white text-xs font-bold py-1.5 px-2 rounded text-center uml-font shadow-sm">@Override read()</div>
+                        <div class="bg-pink-500 text-white text-xs font-bold py-1.5 px-2 rounded text-center uml-font shadow-sm">@Override provide_preview()</div>
                     </div>
                     <div class="p-3 bg-stone-50 text-center text-sm font-bold text-stone-600 uml-font" id="stock-shojo">재고: 로딩중</div>
                 </div>
-                <div onclick="selectBook('shonen', this)" class="relative w-1/4 bg-white rounded-xl shadow border-2 border-orange-200 hover:border-orange-500 cursor-pointer overflow-hidden class-card">
+                
+                <div onclick="selectBook('shonen', this)" class="relative w-1/4 bg-white rounded-xl shadow border-2 border-orange-200 hover:border-orange-500 cursor-pointer overflow-hidden class-card group">
                     <div class="absolute -top-1 left-1/2 w-1 h-5 bg-stone-300 -translate-x-1/2"></div>
                     <div class="p-4 text-center mt-2 border-b border-stone-100">
-                        <h3 class="font-bold text-lg text-orange-600">Shonen</h3>
-                        <p class="text-blue-300 mt-2"> @Override read() </p>
-                        <p class="text-blue-300 mt-2"> @Override provide_preview(self, hero=None, heroin=None) </p>
+                        <h3 class="font-bold text-lg text-orange-600 group-hover:scale-110 transition-transform">Shonen</h3>
+                    </div>
+                    <div class="p-4 text-xs uml-font text-stone-600 space-y-1 border-b border-stone-100">
+                        <p>genre: "소년"</p>
+                        <p>rent_num: 3</p>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <div class="bg-orange-500 text-white text-xs font-bold py-1.5 px-2 rounded text-center uml-font shadow-sm">@Override read()</div>
+                        <div class="bg-orange-500 text-white text-xs font-bold py-1.5 px-2 rounded text-center uml-font shadow-sm">@Override provide_preview()</div>
                     </div>
                     <div class="p-3 bg-stone-50 text-center text-sm font-bold text-stone-600 uml-font" id="stock-shonen">재고: 로딩중</div>
                 </div>
-                <div onclick="selectBook('fantasy', this)" class="relative w-1/4 bg-white rounded-xl shadow border-2 border-purple-200 hover:border-purple-500 cursor-pointer overflow-hidden class-card">
+                
+                <div onclick="selectBook('fantasy', this)" class="relative w-1/4 bg-white rounded-xl shadow border-2 border-purple-200 hover:border-purple-500 cursor-pointer overflow-hidden class-card group">
                     <div class="absolute -top-1 left-1/2 w-1 h-5 bg-stone-300 -translate-x-1/2"></div>
                     <div class="p-4 text-center mt-2 border-b border-stone-100">
-                        <h3 class="font-bold text-lg text-purple-600">Fantasy</h3>
-                        <p class="text-blue-300 mt-2"> @Override read() </p>
-                        <p class="text-blue-300 mt-2"> @Override provide_preview(self, hero=None, heroin=None) </p>
+                        <h3 class="font-bold text-lg text-purple-600 group-hover:scale-110 transition-transform">Fantasy</h3>
+                    </div>
+                    <div class="p-4 text-xs uml-font text-stone-600 space-y-1 border-b border-stone-100">
+                        <p>genre: "판타지(이세계)"</p>
+                        <p>rent_num: 10</p>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <div class="bg-purple-500 text-white text-xs font-bold py-1.5 px-2 rounded text-center uml-font shadow-sm">@Override read()</div>
+                        <div class="bg-purple-500 text-white text-xs font-bold py-1.5 px-2 rounded text-center uml-font shadow-sm">@Override provide_preview()</div>
                     </div>
                     <div class="p-3 bg-stone-50 text-center text-sm font-bold text-stone-600 uml-font" id="stock-fantasy">재고: 로딩중</div>
                 </div>
-                <div onclick="selectBook('sliceOfLife', this)" class="relative w-1/4 bg-white rounded-xl shadow border-2 border-green-200 hover:border-green-500 cursor-pointer overflow-hidden class-card">
+                
+                <div onclick="selectBook('sliceOfLife', this)" class="relative w-1/4 bg-white rounded-xl shadow border-2 border-green-200 hover:border-green-500 cursor-pointer overflow-hidden class-card group">
                     <div class="absolute -top-1 left-1/2 w-1 h-5 bg-stone-300 -translate-x-1/2"></div>
                     <div class="p-4 text-center mt-2 border-b border-stone-100">
-                        <h3 class="font-bold text-lg text-green-600">SliceOfLife</h3>
-                        <p class="text-blue-300 mt-2"> @Override read() </p>
-                        <p class="text-blue-300 mt-2"> @Override provide_preview(self, hero=None, heroin=None) </p>
+                        <h3 class="font-bold text-lg text-green-600 group-hover:scale-110 transition-transform">SliceOfLife</h3>
+                    </div>
+                    <div class="p-4 text-xs uml-font text-stone-600 space-y-1 border-b border-stone-100">
+                        <p>genre: "일상(코미디)"</p>
+                        <p>rent_num: 2</p>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <div class="bg-green-500 text-white text-xs font-bold py-1.5 px-2 rounded text-center uml-font shadow-sm">@Override read()</div>
+                        <div class="bg-green-500 text-white text-xs font-bold py-1.5 px-2 rounded text-center uml-font shadow-sm">@Override provide_preview()</div>
                     </div>
                     <div class="p-3 bg-stone-50 text-center text-sm font-bold text-stone-600 uml-font" id="stock-sliceOfLife">재고: 로딩중</div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -219,8 +257,6 @@
         class SliceOfLife extends Book {
             constructor(name, ISBN, rentNum) { super(name, ISBN, "일상(코미디)", rentNum); }
             read() { return `편안하게 웃으며 일상의 소소함을 즐깁니다. 🍵`; }
-            
-            // 상현님의 파이썬 분기 로직 완벽 반영
             providePreview(hero, heroin) {
                 if (hero) return `[${hero}의] 편안하고 소소한 일상 이야기!`;
                 if (heroin) return `주인공은 나다! [주인공 ${heroin}의] 왁자지껄 코미디!`;
@@ -264,7 +300,6 @@
             renderKiosk();
         }
 
-        // 토글을 누르면 즉시 화면을 갱신하는 헬퍼 함수
         function renderKioskIfActive() {
             if (currentActiveKey) renderKiosk();
         }
@@ -275,17 +310,14 @@
             const preset = presets[currentActiveKey];
             const theme = book.getTheme();
 
-            // ★ 토글 스위치 상태 확인
             const useDefault = document.getElementById('useDefaultToggle').checked;
 
-            // 입력값 가져오기
             const inputTitle = document.getElementById('bookTitleInput').value.trim();
             const inputIsbn = document.getElementById('isbnInput').value.trim();
             const inputImgUrl = document.getElementById('imgUrlInput').value.trim();
             const inputHero = document.getElementById('heroInput').value.trim();
             const inputHeroin = document.getElementById('heroinInput').value.trim();
 
-            // 토글이 켜져있으면(useDefault) preset을 사용하고, 꺼져있으면 빈 문자열("") 또는 "미상" 처리
             book.name = inputTitle || (useDefault ? preset.title : "제목 미상");
             book.ISBN = inputIsbn || (useDefault ? preset.isbn : "000-000");
             book.imgUrl = inputImgUrl || (useDefault ? preset.img : "");
