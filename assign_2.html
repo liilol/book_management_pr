@@ -13,7 +13,6 @@
         .animate-pop-in { animation: popIn 0.4s ease-out forwards; }
         .uml-font { font-family: 'Consolas', 'Monaco', 'Courier New', monospace; }
         
-        /* 토스트 알림 애니메이션 */
         @keyframes slideUp {
             0% { opacity: 0; transform: translate(-50%, 20px); }
             10% { opacity: 1; transform: translate(-50%, 0); }
@@ -21,6 +20,10 @@
             100% { opacity: 0; transform: translate(-50%, -20px); }
         }
         .toast-animate { animation: slideUp 2.5s ease-in-out forwards; }
+
+        /* 토글 스위치 CSS */
+        input:checked ~ .toggle-bg { background-color: #10b981; } /* emerald-500 */
+        input:checked ~ .toggle-dot { transform: translateX(100%); }
     </style>
 </head>
 <body class="bg-stone-100 font-sans text-slate-800 p-8 flex flex-col items-center min-h-screen">
@@ -34,9 +37,23 @@
 
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 mb-10 w-full max-w-4xl relative overflow-hidden">
         <div class="absolute top-0 left-0 w-1 h-full bg-stone-400"></div>
-        <h2 class="text-lg font-bold mb-4 text-stone-700 flex items-center gap-2">
-            <span>⚙️</span> 도서 정보 오버라이딩 (선택사항)
-        </h2>
+        
+        <div class="flex items-center justify-between mb-6 border-b border-stone-100 pb-4">
+            <h2 class="text-lg font-bold text-stone-700 flex items-center gap-2">
+                <span>⚙️</span> 도서 정보 오버라이딩
+            </h2>
+            <label class="flex items-center cursor-pointer group">
+                <div class="mr-3 text-sm font-bold text-stone-500 group-hover:text-stone-700 transition-colors">
+                    빈칸일 때 장르별 기본값 채우기
+                </div>
+                <div class="relative">
+                    <input type="checkbox" id="useDefaultToggle" class="sr-only" checked onchange="renderKioskIfActive()">
+                    <div class="block bg-stone-300 w-10 h-6 rounded-full toggle-bg transition-colors duration-300"></div>
+                    <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 toggle-dot shadow-sm"></div>
+                </div>
+            </label>
+        </div>
+
         <div class="flex gap-4 mb-4">
             <div class="flex-1">
                 <label class="block text-sm font-bold text-stone-500 mb-1">책 제목</label>
@@ -71,6 +88,7 @@
             <div class="p-4 text-sm uml-font text-stone-300 space-y-1">
                 <p class="text-yellow-400"># read()</p>
                 <p class="text-yellow-400"># rental()</p>
+                <p class="text-yellow-400"># BookReturn()</p>
             </div>
         </div>
         <div class="w-1 h-6 bg-stone-300"></div>
@@ -81,8 +99,9 @@
             <div class="p-4 text-sm uml-font text-stone-200 space-y-1">
                 <p>- __name, __ISBN, __genre</p>
                 <p>- _rent_num: int</p>
-                <p class="text-yellow-300 mt-2">+ rental() : 대출 (rent_num 감소)</p>
-                <p class="text-yellow-300">+ returnBook() : 반납 (rent_num 증가)</p>
+                <p class="text-green-300 font-bold">- _realBookNum: int</p>
+                <p class="text-yellow-300 mt-2">+ rental(amount=1)</p>
+                <p class="text-yellow-300">+ BookReturn()</p>
             </div>
         </div>
         <div class="w-1 h-6 bg-stone-300"></div>
@@ -122,36 +141,31 @@
         </div>
     </div>
 
-    <div id="visualOutput" class="w-full max-w-4xl hidden">
-        </div>
+    <div id="visualOutput" class="w-full max-w-4xl hidden"></div>
 
     <script>
-        // --- 1. 클래스 정의 (상태(rentNum) 조작 로직 추가) ---
+        // --- 1. 클래스 정의 ---
         class Book {
             constructor(name, ISBN, genre, rentNum) {
-                this.name = name; 
-                this.ISBN = ISBN; 
-                this.genre = genre;
-                this.rentNum = rentNum; // 객체가 유지해야 할 상태값
-                this.imgUrl = "";
+                this.name = name; this.ISBN = ISBN; this.genre = genre;
+                this.rentNum = rentNum; this.realBookNum = rentNum; this.imgUrl = "";
             }
-            
-            // 대출 로직
-            rental() {
-                if (this.rentNum > 0) {
-                    this.rentNum--;
+            rental(amount = 1) {
+                if (this.rentNum >= amount) {
+                    this.rentNum -= amount;
                     return { success: true, msg: `📖 [${this.name}] 대출이 완료되었습니다.` };
                 } else {
-                    return { success: false, msg: `❌ [${this.name}] 재고가 부족하여 대출할 수 없습니다.` };
+                    return { success: false, msg: `❌ [${this.name}] 현재 권수가 부족하여 대출할 수 없습니다.` };
                 }
             }
-
-            // 반납 로직
-            returnBook() {
-                this.rentNum++;
-                return { success: true, msg: `📥 [${this.name}] 반납이 완료되었습니다.` };
+            BookReturn() {
+                if (this.rentNum !== this.realBookNum) {
+                    this.rentNum += 1;
+                    return { success: true, msg: `📥 [${this.name}] 반납이 완료되었습니다.` };
+                } else {
+                    return { success: false, msg: `⚠️ 현재 대출중인 책이 없습니다!` };
+                }
             }
-
             read() { return `'${this.name}' 도서를 읽기 시작합니다.`; }
             providePreview(hero, heroin) {
                 if (hero && heroin) return `[${hero}와 ${heroin}의] '${this.genre}' 이야기!`;
@@ -161,7 +175,6 @@
             getTheme() { return { bg: 'bg-stone-50', border: 'border-stone-200', text: 'text-stone-800' }; }
         }
 
-        // 자식 클래스들 (장르 오버라이딩)
         class Shojo extends Book {
             constructor(name, ISBN, rentNum) { super(name, ISBN, "순정(소녀)", rentNum); }
             read() { return `설레는 마음으로 감정선을 따라 읽습니다. 💖`; }
@@ -195,14 +208,17 @@
         class SliceOfLife extends Book {
             constructor(name, ISBN, rentNum) { super(name, ISBN, "일상(코미디)", rentNum); }
             read() { return `편안하게 웃으며 일상의 소소함을 즐깁니다. 🍵`; }
+            
+            // 상현님의 파이썬 분기 로직 완벽 반영
             providePreview(hero, heroin) {
                 if (hero) return `[${hero}의] 편안하고 소소한 일상 이야기!`;
+                if (heroin) return `주인공은 나다! [주인공 ${heroin}의] 왁자지껄 코미디!`;
                 return super.providePreview(hero, heroin);
             }
             getTheme() { return { bg: 'bg-green-50', border: 'border-green-300', text: 'text-green-800', btn: 'bg-green-500', btnHover: 'hover:bg-green-600' }; }
         }
 
-        // --- 2. 객체 글로벌 인스턴스화 (재고 상태 유지를 위해 단 한 번만 생성) ---
+        // --- 2. 전역 인스턴스 및 프리셋 ---
         const libraryDB = {
             shojo: new Shojo("너에게 닿기를", "979-114", 5),
             shonen: new Shonen("이니셜 D", "979-113", 3),
@@ -210,86 +226,87 @@
             sliceOfLife: new SliceOfLife("유루캠프", "978-483", 2)
         };
 
-        // 기본 이미지 및 캐릭터 정보 (인스턴스 생성 후 프로퍼티로 주입)
         const presets = {
-            shojo: { img: "https://upload.wikimedia.org/wikipedia/ko/c/cd/Kimi_ni_todoke_1.jpg", hero: "카제하야 쇼타", heroin: "쿠로누마 사와코" },
-            shonen: { img: "https://upload.wikimedia.org/wikipedia/ko/a/a2/InitialD_01.jpg", hero: "후지와라 분타", heroin: "모기 나츠키" },
-            fantasy: { img: "https://upload.wikimedia.org/wikipedia/ko/9/9f/Konosuba_01.jpg", hero: "카즈마", heroin: "아쿠아" },
-            sliceOfLife: { img: "https://upload.wikimedia.org/wikipedia/ko/d/df/YuruCamp_01.jpg", hero: "나데시코", heroin: "린" }
+            shojo: { title: "너에게 닿기를", isbn: "979-114", img: "https://th.bing.com/th/id/OIP.W2oTdePL_mkM9-rHHok_3QAAAA?w=204&h=305&c=7&r=0&o=7&dpr=2.2&pid=1.7&rm=3", hero: "카제하야 쇼타", heroin: "쿠로누마 사와코" },
+            shonen: { title: "이니셜 D", isbn: "979-113", img: "https://th.bing.com/th/id/OIP.iO-e69ARj1sVuRmmxbDghAHaIv?w=154&h=182&c=7&r=0&o=7&dpr=2.2&pid=1.7&rm=3", hero: "후지와라 분타", heroin: "모기 나츠키" },
+            fantasy: { title: "이 멋진 세계에 축복을!", isbn: "978-892", img: "https://th.bing.com/th/id/OIP.oSizFdblf5LoQ1t8qeQnxwHaK-?w=205&h=304&c=7&r=0&o=7&dpr=2.2&pid=1.7&rm=3", hero: "카즈마", heroin: "아쿠아" },
+            sliceOfLife: { title: "유루캠프", isbn: "978-483", img: "https://th.bing.com/th/id/OIP.IkHtNBJz_fK8Yp5BbKSSywHaKv?w=125&h=182&c=7&r=0&o=7&dpr=2.2&pid=1.7&rm=3", hero: "나데시코", heroin: "린" }
         };
 
-        // 현재 선택된 장르 키를 저장
         let currentActiveKey = null;
 
-        // 초기 재고 UI 업데이트
         function updateUMLStock() {
             for (const key in libraryDB) {
-                document.getElementById(`stock-${key}`).innerText = `재고: ${libraryDB[key].rentNum}권`;
+                const book = libraryDB[key];
+                document.getElementById(`stock-${key}`).innerText = `재고: ${book.rentNum} / ${book.realBookNum}권`;
             }
         }
-        updateUMLStock(); // 로딩 시 즉시 실행
+        updateUMLStock();
 
-        // --- 3. UI 렌더링 및 로직 ---
-        
-        // 카드 클릭 시 실행
+        // --- 3. UI 렌더링 로직 ---
         function selectBook(genreKey, clickedElement) {
             currentActiveKey = genreKey;
             
-            // 입력값 확인 및 객체 속성 업데이트 (오버라이딩)
-            const book = libraryDB[genreKey];
-            const preset = presets[genreKey];
-            
-            book.name = document.getElementById('bookTitleInput').value.trim() || book.name;
-            book.ISBN = document.getElementById('isbnInput').value.trim() || book.ISBN;
-            book.imgUrl = document.getElementById('imgUrlInput').value.trim() || preset.img;
-            
-            // UI 하이라이트 변경
             document.querySelectorAll('.class-card').forEach(el => el.classList.remove('ring-4', 'ring-stone-400'));
-            clickedElement.classList.add('ring-4', 'ring-stone-400');
+            if(clickedElement) clickedElement.classList.add('ring-4', 'ring-stone-400');
 
             renderKiosk();
         }
 
-        // 키오스크 화면 그리기
+        // 토글을 누르면 즉시 화면을 갱신하는 헬퍼 함수
+        function renderKioskIfActive() {
+            if (currentActiveKey) renderKiosk();
+        }
+
         function renderKiosk() {
             if (!currentActiveKey) return;
             const book = libraryDB[currentActiveKey];
             const preset = presets[currentActiveKey];
             const theme = book.getTheme();
 
-            const hero = document.getElementById('heroInput').value.trim() || preset.hero;
-            const heroin = document.getElementById('heroinInput').value.trim() || preset.heroin;
+            // ★ 토글 스위치 상태 확인
+            const useDefault = document.getElementById('useDefaultToggle').checked;
+
+            // 입력값 가져오기
+            const inputTitle = document.getElementById('bookTitleInput').value.trim();
+            const inputIsbn = document.getElementById('isbnInput').value.trim();
+            const inputImgUrl = document.getElementById('imgUrlInput').value.trim();
+            const inputHero = document.getElementById('heroInput').value.trim();
+            const inputHeroin = document.getElementById('heroinInput').value.trim();
+
+            // 토글이 켜져있으면(useDefault) preset을 사용하고, 꺼져있으면 빈 문자열("") 또는 "미상" 처리
+            book.name = inputTitle || (useDefault ? preset.title : "제목 미상");
+            book.ISBN = inputIsbn || (useDefault ? preset.isbn : "000-000");
+            book.imgUrl = inputImgUrl || (useDefault ? preset.img : "");
+
+            const finalHero = inputHero || (useDefault ? preset.hero : "");
+            const finalHeroin = inputHeroin || (useDefault ? preset.heroin : "");
 
             const readResult = book.read();
-            const previewResult = book.providePreview(hero, heroin);
+            const previewResult = book.providePreview(finalHero, finalHeroin);
 
             const imageElement = book.imgUrl 
                 ? `<img src="${book.imgUrl}" alt="표지" class="w-32 h-44 object-cover rounded shadow-lg border border-stone-300">` 
                 : `<div class="w-32 h-44 bg-stone-200 flex items-center justify-center rounded border border-stone-300 text-sm font-bold text-stone-500 shadow-lg">No Image</div>`;
 
-            // 재고 시각화 바 (Progress bar)
-            const maxStock = 10;
-            const stockPercent = Math.min((book.rentNum / maxStock) * 100, 100);
+            const stockPercent = Math.min((book.rentNum / book.realBookNum) * 100, 100);
             const stockColor = book.rentNum === 0 ? 'bg-red-500' : theme.btn;
 
             const outputDiv = document.getElementById('visualOutput');
             outputDiv.innerHTML = `
-                <div class="${theme.bg} border border-stone-300 rounded-xl p-8 shadow-2xl animate-pop-in">
-                    
+                <div class="${theme.bg} border border-stone-300 rounded-xl p-8 shadow-2xl animate-pop-in mt-6">
                     <div class="flex items-start gap-8 border-b ${theme.border} pb-8 mb-6">
                         ${imageElement}
                         <div class="flex-1">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <span class="inline-block bg-white px-2 py-0.5 rounded text-xs font-bold ${theme.text} border ${theme.border} mb-2 shadow-sm">
-                                        분류: ${book.genre}
-                                    </span>
+                                    <span class="inline-block bg-white px-2 py-0.5 rounded text-xs font-bold ${theme.text} border ${theme.border} mb-2 shadow-sm">분류: ${book.genre}</span>
                                     <h2 class="text-3xl font-black ${theme.text} mb-1">${book.name}</h2>
                                     <span class="text-sm text-stone-500 font-mono">ISBN: ${book.ISBN}</span>
                                 </div>
-                                <div class="text-right bg-white p-3 rounded-lg border ${theme.border} shadow-inner min-w-[120px]">
-                                    <div class="text-xs font-bold text-stone-500 mb-1">현재 보유 권수</div>
-                                    <div class="text-3xl font-black ${book.rentNum === 0 ? 'text-red-500' : theme.text}">${book.rentNum}<span class="text-lg">권</span></div>
+                                <div class="text-right bg-white p-3 rounded-lg border ${theme.border} shadow-inner min-w-[140px]">
+                                    <div class="text-xs font-bold text-stone-500 mb-1">현재 보유 / 총량</div>
+                                    <div class="text-3xl font-black ${book.rentNum === 0 ? 'text-red-500' : theme.text}">${book.rentNum}<span class="text-lg text-stone-400"> / ${book.realBookNum}</span></div>
                                 </div>
                             </div>
 
@@ -298,13 +315,17 @@
                             </div>
                             
                             <div class="flex gap-3">
-                                <button onclick="actionRental()" class="flex-1 ${theme.btn} ${theme.btnHover} text-white font-bold py-3 rounded-lg shadow transition-colors flex justify-center items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                    대출하기
+                                <button onclick="actionRental()" class="flex-1 ${theme.btn} ${theme.btnHover} text-white font-bold py-2 rounded-lg shadow transition-colors flex flex-col justify-center items-center">
+                                    <span class="font-mono text-[10px] opacity-75 mb-0.5 tracking-wider">rental(amount=1)</span>
+                                    <div class="flex items-center gap-2 text-lg">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> 대출하기
+                                    </div>
                                 </button>
-                                <button onclick="actionReturn()" class="flex-1 bg-white hover:bg-stone-100 text-stone-700 font-bold border-2 border-stone-300 py-3 rounded-lg shadow-sm transition-colors flex justify-center items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
-                                    반납하기
+                                <button onclick="actionReturn()" class="flex-1 bg-white hover:bg-stone-100 text-stone-700 font-bold border-2 border-stone-300 py-2 rounded-lg shadow-sm transition-colors flex flex-col justify-center items-center">
+                                    <span class="font-mono text-[10px] text-stone-400 mb-0.5 tracking-wider">BookReturn()</span>
+                                    <div class="flex items-center gap-2 text-lg">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg> 반납하기
+                                    </div>
                                 </button>
                             </div>
                         </div>
@@ -317,7 +338,7 @@
                             <p class="font-medium text-stone-800">"${readResult}"</p>
                         </div>
                         <div class="bg-white p-4 rounded-lg border ${theme.border} shadow-sm flex items-center gap-4">
-                            <span class="${theme.btn} text-white px-2 py-1 rounded text-xs font-bold whitespace-nowrap">provide_preview()</span>
+                            <span class="${theme.btn} text-white px-2 py-1 rounded text-xs font-bold whitespace-nowrap">provide_preview(hero, heroine)</span>
                             <p class="font-medium text-stone-800">"${previewResult}"</p>
                         </div>
                     </div>
@@ -330,28 +351,24 @@
         function actionRental() {
             if (!currentActiveKey) return;
             const book = libraryDB[currentActiveKey];
-            const result = book.rental(); // 객체 상태 변경
-            
+            const result = book.rental(1); 
             showToast(result.msg, result.success);
-            updateUMLStock(); // 윗부분 UML 카드 숫자 업데이트
-            renderKiosk();    // 하단 키오스크 UI 다시 그리기
+            updateUMLStock(); 
+            renderKiosk();    
         }
 
         function actionReturn() {
             if (!currentActiveKey) return;
             const book = libraryDB[currentActiveKey];
-            const result = book.returnBook(); // 객체 상태 변경
-            
-            showToast(result.msg, true);
+            const result = book.BookReturn(); 
+            showToast(result.msg, result.success);
             updateUMLStock();
             renderKiosk();
         }
 
-        // 토스트 알림 띄우기
         function showToast(message, isSuccess) {
             const toast = document.getElementById('toastMessage');
             toast.innerText = message;
-            
             if (isSuccess) {
                 toast.classList.remove('bg-red-500');
                 toast.classList.add('bg-stone-800');
@@ -359,8 +376,6 @@
                 toast.classList.remove('bg-stone-800');
                 toast.classList.add('bg-red-500');
             }
-
-            // 애니메이션 재시작 트릭
             toast.classList.remove('hidden', 'toast-animate');
             void toast.offsetWidth; 
             toast.classList.add('toast-animate');
