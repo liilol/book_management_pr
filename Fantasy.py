@@ -7,9 +7,6 @@ class fantasy(Book):
     def read(self):
         print(f"[{self.name}] 거대한 세계관과 마법의 세계에 빠져듭니다.")
 
-    def rantal(self, amount=1):
-        self.rent_num -= amount
-
     def provide_preview(self, hero=None, heroin=None):
         if heroin and hero:
             print(f"[{hero}와 {heroin}의] 마법과 끝없는 모험의 이야기! (ISBN: {self.ISBN})")

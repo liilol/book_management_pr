@@ -7,9 +7,6 @@ class shonen(Book): # 클래스명 대문자 권장
     def read(self):
         print(f"[{self.name}] 뜨거운 열정과 액션에 몰입하여 읽습니다.")
 
-    def rantal(self, amount=1):
-        self.rent_num -= amount
-
     def provide_preview(self, hero=None, heroin=None):
         if heroin and hero:
             print(f"[{hero}와 {heroin}의] 액션, 모험 위주의 활극! (ISBN: {self.ISBN})")

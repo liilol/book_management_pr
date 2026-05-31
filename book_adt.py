@@ -42,3 +42,8 @@ class BookADT(ABC):
     def read(self):
         """객체의 특성에 맞게 읽는 동작을 수행하는 연산"""
         pass
+    
+    @abstractmethod
+    def BookReturn(self):
+        """ㄱ만약 ranral한 값이 있다면 대출의 수를 감소시키는 연산"""
+        pass

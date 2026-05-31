@@ -8,6 +8,7 @@ class Book(BookADT):
         self.__ISBN = ISBN
         self.__genre = genre
         self._rent_num = rent_num
+        self._realBookNum = rent_num
 
     # --- Properties (Getters) ---
     @property
@@ -60,6 +61,15 @@ class Book(BookADT):
     def rantal(self, amount=1):
         """대출 처리: 보유 권수를 줄임"""
         self.rent_num -= amount
+        
+    def BookReturn(self):
+        if(self.rent_num != self.realBookNum):
+            self.rent_num += 1
+        else:
+            print("현제 대출중인 책이 없습니다!")
+        
+        
+        
     def read(self):
         """기본 읽기 동작"""
         print(f"'{self.name}' 도서를 읽기 시작합니다.")
